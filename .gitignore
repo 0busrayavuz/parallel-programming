@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+
+# Ortam / IDE
+.env
+.idea/
+.vscode/
+
+# Olusturulan ciktilar
+*.mp4
+*.avi
+seq.json
+par.json
+rapor_test.md
+KIYAS.md
+
+# OS
+.DS_Store
+Thumbs.db
