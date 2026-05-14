@@ -48,6 +48,31 @@ class EdgeInspectionPipeline:
         edges_bgr = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
         return cv2.addWeighted(bgr, 0.22, edges_bgr, 0.78, 0.0)
 
+    @staticmethod
+    def _edges_stress(bgr: np.ndarray, gray: np.ndarray) -> np.ndarray:
+        """
+        Paralel vs seri kiyasinda IPC maliyetini gormezden gelecek kadar agir is.
+        Hedef: tipik 640x480 civarinda kare basina ~30-80 ms (makineye gore degisir).
+        """
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        eq = clahe.apply(gray)
+        x = cv2.medianBlur(eq, 15)
+        k = 21
+        for _ in range(11):
+            x = cv2.GaussianBlur(x, (k, k), 0)
+            x = cv2.Canny(x, 38, 115)
+        x = cv2.medianBlur(x, 11)
+        kernel = np.ones((7, 7), np.uint8)
+        x = cv2.morphologyEx(x, cv2.MORPH_CLOSE, kernel)
+        edges_bgr = cv2.cvtColor(x, cv2.COLOR_GRAY2BGR)
+        out = cv2.addWeighted(bgr, 0.25, edges_bgr, 0.75, 0.0)
+        # Kucuk bolgede ek CPU (vektorize; numpy) - grain size artisi
+        patch = out[::8, ::8].astype(np.float64)
+        for _ in range(18):
+            patch = np.sqrt(np.abs(patch) + 1.0)
+        out[::8, ::8] = np.clip(patch, 0, 255).astype(np.uint8)
+        return out
+
     @classmethod
     def apply(cls, bgr: np.ndarray, profile: str) -> np.ndarray:
         key = canonical_profile(profile)
@@ -59,6 +84,8 @@ class EdgeInspectionPipeline:
             return cv2.cvtColor(e, cv2.COLOR_GRAY2BGR)
         if key == "standard":
             return cls._edges_standard(bgr, gray)
+        if key == "stress":
+            return cls._edges_stress(bgr, gray)
         return cls._edges_quality(bgr, gray)
 
 

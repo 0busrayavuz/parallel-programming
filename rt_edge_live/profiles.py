@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-PROFILE_KEYS: tuple[str, ...] = ("fast", "standard", "quality")
+PROFILE_KEYS: tuple[str, ...] = ("fast", "standard", "quality", "stress")
 
 _LEGACY_PROFILE_ALIASES: dict[str, str] = {
     "light": "fast",
@@ -42,5 +42,10 @@ PROFILES: dict[str, PipelineProfile] = {
         key="quality",
         display_name="Yuksek dogruluk",
         one_line="CLAHE + bilateral + Canny + morfoloji + overlay",
+    ),
+    "stress": PipelineProfile(
+        key="stress",
+        display_name="Paralellik demasi (agir CPU)",
+        one_line="CLAHE + median(15) + coklu buyuk Gaussian(21) + Canny tekrar + morfoloji",
     ),
 }

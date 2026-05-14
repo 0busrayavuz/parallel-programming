@@ -71,6 +71,27 @@ def write_run_markdown(out_path: str | Path, payload: dict[str, Any]) -> None:
             f"| Basarili | {rec.get('ok', False)} |\n"
         )
 
+    ss = payload.get("split_screen")
+    split_section = ""
+    if isinstance(ss, dict) and ss.get("frames"):
+        split_section = f"""
+## 2b. Split-screen (sol seri / sag iplik havuzu) ozeti
+
+| Olcum | Deger |
+|-------|-------|
+| Kare | {ss.get("frames", "-")} |
+| Sequential ort. (ms) | {ss.get("sequential_ms_mean", "-")} |
+| Sequential min / max (ms) | {ss.get("sequential_ms_min", "-")} / {ss.get("sequential_ms_max", "-")} |
+| Parallel dal ort. duvar (ms) | {ss.get("parallel_branch_wall_ms_mean", "-")} |
+| Parallel dal min / max (ms) | {ss.get("parallel_branch_wall_ms_min", "-")} / {ss.get("parallel_branch_wall_ms_max", "-")} |
+| result() bekleme ort. (ms) | {ss.get("wait_after_sequential_ms_mean", "-")} |
+| Kare duvar ort. (ms) | {ss.get("frame_wall_ms_mean", "-")} |
+| Tahmini FPS (sirali ms) | {ss.get("approx_fps_from_sequential_ms", "-")} |
+| Tahmini FPS (par. dal ms) | {ss.get("approx_fps_from_parallel_wall_ms", "-")} |
+
+_{ss.get("note", "")}_
+"""
+
     body = f"""# {payload.get("product", "Rapor")} - Olcum ciktisi
 
 - **Rapor zamanı (UTC)**: {_utc_now()}
@@ -93,7 +114,7 @@ def write_run_markdown(out_path: str | Path, payload: dict[str, Any]) -> None:
 | İşlenen kare | {payload.get("frames", 0)} |
 | Duvar saati (s) | {payload.get("wall_seconds", 0)} |
 | Throughput (kare/s) | **{payload.get("throughput_frames_per_s", 0)}** |
-
+{split_section}
 ## 3. Video kaydı
 
 {rec_rows if rec_rows else "_Kayit istenmedi veya dosya acilamadi / kare yazilmadi._"}
@@ -110,19 +131,15 @@ def write_run_markdown(out_path: str | Path, payload: dict[str, Any]) -> None:
     p.write_text(body, encoding="utf-8")
 
 
-def write_compare_markdown(
-    out_path: str | Path,
-    path_a: str | Path,
-    path_b: str | Path,
-    label_a: str = "Koşu A",
-    label_b: str = "Koşu B",
-) -> None:
-    """Iki JSON olcum dosyasini tabloda kiyaslar."""
-    a = _load_json_file(path_a)
-    b = _load_json_file(path_b)
-    p = Path(out_path)
-    p.parent.mkdir(parents=True, exist_ok=True)
-
+def _build_compare_markdown(
+    a: dict[str, Any],
+    b: dict[str, Any],
+    *,
+    label_a: str,
+    label_b: str,
+    ref_a: str,
+    ref_b: str,
+) -> str:
     thr_a = float(a.get("throughput_frames_per_s") or 0)
     thr_b = float(b.get("throughput_frames_per_s") or 0)
     if thr_a > 0 and thr_b > 0:
@@ -131,11 +148,11 @@ def write_compare_markdown(
     else:
         kiyas = "Throughput kiyaslanamadi (sifir kare veya sure)."
 
-    body = f"""# Karsilastirmali olcum raporu
+    return f"""# Karsilastirmali olcum raporu
 
 - **Rapor zamanı (UTC)**: {_utc_now()}
-- **{label_a}**: `{path_a}`
-- **{label_b}**: `{path_b}`
+- **{label_a}**: `{ref_a}`
+- **{label_b}**: `{ref_b}`
 
 ## Yan yana ozet
 
@@ -164,4 +181,50 @@ def write_compare_markdown(
 {json.dumps(b, ensure_ascii=False, indent=2)}
 ```
 """
+
+
+def write_compare_markdown(
+    out_path: str | Path,
+    path_a: str | Path,
+    path_b: str | Path,
+    label_a: str = "Koşu A",
+    label_b: str = "Koşu B",
+) -> None:
+    """Iki JSON olcum dosyasini tabloda kiyaslar."""
+    a = _load_json_file(path_a)
+    b = _load_json_file(path_b)
+    p = Path(out_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    body = _build_compare_markdown(
+        a,
+        b,
+        label_a=label_a,
+        label_b=label_b,
+        ref_a=str(path_a),
+        ref_b=str(path_b),
+    )
+    p.write_text(body, encoding="utf-8")
+
+
+def write_compare_markdown_payloads(
+    out_path: str | Path,
+    payload_a: dict[str, Any],
+    payload_b: dict[str, Any],
+    *,
+    label_a: str = "Koşu A (seq_split)",
+    label_b: str = "Koşu B (par_split)",
+    ref_a: str,
+    ref_b: str,
+) -> None:
+    """Iki olcum sozlugunu (dosyadan okumadan) Markdown kiyasta yazar."""
+    p = Path(out_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    body = _build_compare_markdown(
+        payload_a,
+        payload_b,
+        label_a=label_a,
+        label_b=label_b,
+        ref_a=ref_a,
+        ref_b=ref_b,
+    )
     p.write_text(body, encoding="utf-8")
