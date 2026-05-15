@@ -1,12 +1,16 @@
+<![CDATA[<div align="center">
+
 # 🎯 RT Edge Live — Canlı Kenar Analitiği
 
-> Gerçek zamanlı kenar algılama ve paralel programlama performans karşılaştırma aracı
+**Gerçek zamanlı kenar algılama ve paralel programlama performans karşılaştırma aracı**
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org)
-[![NumPy](https://img.shields.io/badge/NumPy-1.24+-013243?logo=numpy&logoColor=white)](https://numpy.org)
-[![Platform](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
-[![Version](https://img.shields.io/badge/version-1.2.1-2ea44f)](#)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-1.24+-013243?style=for-the-badge&logo=numpy&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Windows_10/11-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![Version](https://img.shields.io/badge/Version-1.2.1-2ea44f?style=for-the-badge)
+
+</div>
 
 ---
 
@@ -19,8 +23,9 @@
 - [Kullanım](#-kullanım)
 - [Çalışma Modları](#-çalışma-modları)
 - [İşleme Profilleri](#-i̇şleme-profilleri)
-- [Çıktı ve Raporlama](#-çıktı-ve-raporlama)
+- [Çıktı & Raporlama](#-çıktı--raporlama)
 - [Proje Yapısı](#-proje-yapısı)
+- [Lisans](#-lisans)
 
 ---
 
@@ -30,70 +35,91 @@
 
 Temel amaç, paralel programlama tekniklerinin gerçek zamanlı görüntü işleme üzerindeki performans etkisini **ölçülebilir metriklerle** ortaya koymaktır.
 
-> 💡 Sıralı ve paralel iş hatlarının throughput, kare/saniye ve duvar saati gibi ölçülerle somut karşılaştırmasını yapmak.
+> 💡 **Motivasyon:** Sıralı ve paralel iş hatlarının throughput, kare/saniye ve duvar saati gibi ölçülerle somut karşılaştırmasını yapmak.
 
 ---
 
 ## ✨ Özellikler
 
-- 🔄 **3 Çalışma Modu** — Sequential, Parallel (multiprocessing), Split-Screen
-- 🎚️ **4 İşleme Profili** — Fast, Standard, Quality, Stress
-- 📊 **Metrik Sistemi** — JSON ve Markdown formatında detaylı performans raporları
-- 🎥 **Video Kaydı** — İşlenmiş çıktıyı MP4/AVI olarak kaydetme
-- 📺 **HUD Overlay** — Gerçek zamanlı FPS, profil ve kare bilgisi gösterimi
-- ⚡ **Spawn Context** — Windows uyumlu `multiprocessing.spawn` mimarisi
-- 🧵 **Thread Pool** — Split-screen modunda `ThreadPoolExecutor` entegrasyonu
+| Özellik | Açıklama |
+|---------|----------|
+| 🔄 **3 Çalışma Modu** | Sequential, Parallel (multiprocessing), Split-Screen |
+| 🎚️ **4 İşleme Profili** | Fast, Standard, Quality, Stress |
+| 📊 **Metrik Sistemi** | JSON ve Markdown formatında detaylı performans raporları |
+| 🎥 **Video Kaydı** | İşlenmiş çıktıyı MP4/AVI olarak kaydetme |
+| 📺 **HUD Overlay** | Gerçek zamanlı FPS, profil ve kare bilgisi gösterimi |
+| ⚡ **Spawn Context** | Windows uyumlu `multiprocessing.spawn` mimarisi |
+| 🧵 **Thread Pool** | Split-screen modunda `ThreadPoolExecutor` entegrasyonu |
 
 ---
 
 ## 🏗 Mimari
 
-```mermaid
-flowchart TD
-    CLI["🖥️ CLI (cli.py)<br/>argparse · mod seçimi · metrik akışı"]
-    CLI --> SEQ["Sequential<br/>tek süreç"]
-    CLI --> PAR["Parallel<br/>multiprocessing spawn"]
-    CLI --> SPLIT["Split-Screen<br/>ThreadPoolExecutor"]
-
-    SEQ --> PIPE["🔬 EdgeInspection Pipeline<br/>pipeline.py"]
-    PAR --> PIPE
-    SPLIT --> PIPE
-
-    PIPE --> HUD["📺 HUD Overlay"]
-    PIPE --> REC["🎥 Recorder<br/>MP4 / AVI"]
-    PIPE --> REP["📊 Report<br/>MD / JSON"]
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        CLI (cli.py)                         │
+│              argparse · mod seçimi · metrik akışı            │
+└──────────────┬──────────────┬──────────────┬────────────────┘
+               │              │              │
+       ┌───────▼──────┐ ┌────▼─────┐ ┌──────▼───────┐
+       │  Sequential  │ │ Parallel │ │ Split-Screen │
+       │  (tek süreç) │ │  (spawn) │ │  (threads)   │
+       └───────┬──────┘ └────┬─────┘ └──────┬───────┘
+               │              │              │
+               └──────────────┼──────────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │  EdgeInspection   │
+                    │    Pipeline       │
+                    │  (pipeline.py)    │
+                    └─────────┬─────────┘
+                              │
+               ┌──────────────┼──────────────┐
+               │              │              │
+         ┌─────▼─────┐ ┌─────▼─────┐ ┌──────▼──────┐
+         │   HUD     │ │ Recorder  │ │   Report    │
+         │ Overlay   │ │ (MP4/AVI) │ │ (MD/JSON)   │
+         └───────────┘ └───────────┘ └─────────────┘
 ```
 
-**Paralel mod veri akışı:**
-
-```mermaid
-flowchart LR
-    R["📷 Reader Process<br/>VideoCapture"] -->|job_q| W["⚙️ Worker × N<br/>process_frame"]
-    W -->|result_q| D["🖥️ Display Thread<br/>sıralı HUD + kayıt"]
+**Paralel Mod Detayı:**
+```
+  Reader Process          Worker Processes (N)          Display Thread
+  ┌───────────┐          ┌──────────────────┐          ┌────────────┐
+  │ VideoCapture │──►  │ job_q ──► worker() │──►  │ result_q    │
+  │ kare okuma  │ Queue  │ process_frame()  │ Queue  │ sıralı HUD │
+  └───────────┘          └──────────────────┘          └────────────┘
 ```
 
 ---
 
 ## 🔧 Kurulum
 
-**Gereksinimler:** Python 3.10+ · Windows 10/11
+### Gereksinimler
+
+- **Python 3.10+**
+- **Windows 10/11** (geliştirme ortamı)
+
+### Adımlar
 
 ```powershell
-# Repoyu klonlayın
+# 1. Repoyu klonlayın
 git clone https://github.com/0busrayavuz/parallel-programming.git
 cd parallel-programming
 
-# (Opsiyonel) Sanal ortam
+# 2. (Opsiyonel) Sanal ortam oluşturun
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 
-# Bağımlılıkları yükleyin
+# 3. Bağımlılıkları yükleyin
 python -m pip install -r requirements.txt
 ```
 
 ---
 
 ## 🚀 Kullanım
+
+Uygulama modül olarak çalıştırılır:
 
 ```powershell
 python -m rt_edge_live [BAYRAKLAR]
@@ -112,75 +138,78 @@ python -m rt_edge_live --source demo.mp4 --mode sequential --profile standard
 python -m rt_edge_live --help
 ```
 
-### Performans Karşılaştırma
+### Performans Karşılaştırma (Benchmark)
 
 ```powershell
-# 1️⃣ Sıralı koşu
-python -m rt_edge_live --source demo.mp4 --mode sequential \
-    --max-frames 500 --no-window --metrics-out seq.json
+# 1) Sıralı koşu — metrik JSON'a kaydet
+python -m rt_edge_live --source demo.mp4 --mode sequential --max-frames 500 --no-window --metrics-out seq.json
 
-# 2️⃣ Paralel koşu
-python -m rt_edge_live --source demo.mp4 --mode parallel --workers 4 \
-    --max-frames 500 --no-window --metrics-out par.json
+# 2) Paralel koşu — metrik JSON'a kaydet
+python -m rt_edge_live --source demo.mp4 --mode parallel --workers 4 --max-frames 500 --no-window --metrics-out par.json
 
-# 3️⃣ Karşılaştırma raporu
+# 3) İki JSON'u Markdown raporda karşılaştır
 python -m rt_edge_live --compare-json seq.json par.json --report RAPOR.md
 ```
 
-### Tek Komutla Çift Ölçüm
+### Tek Komutla Çift Ölçüm (Split JSON)
 
 ```powershell
-# Sıralı + paralel koşuyu otomatik yapar, tek JSON çıktı
-python -m rt_edge_live --source demo.mp4 --metrics-split-out split.json \
-    --max-frames 500 --no-window --profile stress --workers 4
+# Önce sıralı, sonra paralel koşuyu otomatik yapar; tek JSON çıktı
+python -m rt_edge_live --source demo.mp4 --metrics-split-out split.json --max-frames 500 --no-window --profile stress --workers 4 --log-level WARNING
 ```
 
-### Split-Screen + Video Kaydı
+### Split-Screen (Bölünmüş Ekran) + Video Kaydı
 
 ```powershell
-# Sol: seri | Sağ: ThreadPool — gerçek zamanlı yan yana karşılaştırma
-python -m rt_edge_live --source 0 --mode split-screen \
-    --workers 4 --profile standard --record split.mp4
+# Sol: seri | Sağ: ThreadPool — gerçek zamanlı karşılaştırma
+python -m rt_edge_live --source 0 --mode split-screen --workers 4 --profile standard --record split.mp4
 ```
 
 ---
 
 ## 🔀 Çalışma Modları
 
-| Mod | Flag | Mekanizma | Kullanım Amacı |
-|-----|------|-----------|----------------|
-| **Sequential** | `--mode sequential` | Tek süreç, seri işleme | Temel performans ölçümü (baseline) |
-| **Parallel** | `--mode parallel` | `multiprocessing.spawn` ile N işçi | Gerçek çok çekirdekli paralellik |
+| Mod | Komut | Mekanizma | Kullanım Amacı |
+|-----|-------|-----------|----------------|
+| **Sequential** | `--mode sequential` | Tek süreç, seri işleme | Temel performans (baseline) ölçümü |
+| **Parallel** | `--mode parallel` | `multiprocessing.spawn` ile N işçi süreç | Gerçek çok çekirdekli paralellik |
 | **Split-Screen** | `--mode split-screen` | Sol: seri · Sağ: `ThreadPoolExecutor` | Görsel yan yana karşılaştırma |
 
-> ⚠️ Split-screen modunda her iki taraf aynı CPU kaynaklarını paylaşır. Tam throughput karşılaştırması için `sequential` ve `parallel` modlarını ayrı koşularla kullanın.
+> ⚠️ **Not:** Split-screen modunda her iki taraf aynı CPU kaynaklarını paylaşır. Tam throughput karşılaştırması için `sequential` ve `parallel` modlarını ayrı koşularla `--metrics-out` ile kullanın.
 
 ---
 
 ## 🎚 İşleme Profilleri
 
-| Profil | Flag | Pipeline | Ağırlık |
-|--------|------|----------|---------|
-| **Fast** | `--profile fast` | GaussianBlur(5) → Canny | ⚡ Hafif |
-| **Standard** | `--profile standard` | CLAHE → Gaussian(7) → Canny → Morfoloji → Overlay | ⚙️ Orta |
-| **Quality** | `--profile quality` | CLAHE → BilateralFilter(9) → Canny → Morfoloji → Overlay | 🔬 Ağır |
-| **Stress** | `--profile stress` | CLAHE → MedianBlur(15) → 11× Gaussian(21) + Canny → NumPy | 🔥 Çok ağır |
+Her profil, farklı ağırlıkta bir kenar algılama iş hattı tanımlar:
 
-> 💡 Legacy uyumluluk: `light` → fast, `balanced` → standard, `heavy` → quality
+| Profil | Flag | Pipeline | Hedef |
+|--------|------|----------|-------|
+| **Fast** | `--profile fast` | GaussianBlur(5) → Canny | Düşük gecikme, hızlı önizleme |
+| **Standard** | `--profile standard` | CLAHE → Gaussian(7) → Canny → Morfoloji → Overlay | Üretim standardı |
+| **Quality** | `--profile quality` | CLAHE → BilateralFilter(9) → Canny → Morfoloji → Overlay | Yüksek doğruluk |
+| **Stress** | `--profile stress` | CLAHE → MedianBlur(15) → 11× Gaussian(21) + Canny → NumPy patch | Ağır CPU — paralellik demosu |
+
+> 💡 **Legacy uyumluluk:** `light` → `fast`, `balanced` → `standard`, `heavy` → `quality` alias'ları desteklenir.
 
 ---
 
-## 📊 Çıktı ve Raporlama
+## 📊 Çıktı & Raporlama
 
 ### JSON Metrikleri
 
 ```powershell
---metrics-out results.json       # Dosyaya yaz (UTF-8)
---metrics-split-out split.json   # Çift ölçüm tek JSON
---metrics-json                   # stdout'a tek satır
+# Dosyaya yaz (UTF-8, önerilen)
+--metrics-out results.json
+
+# Çift ölçüm (seq + par tek JSON)
+--metrics-split-out split.json
+
+# Stdout'a tek satır JSON
+--metrics-json
 ```
 
-Örnek çıktı:
+**Örnek JSON çıktısı:**
 ```json
 {
   "product": "Canli Kenar Analitigi",
@@ -189,21 +218,25 @@ python -m rt_edge_live --source 0 --mode split-screen \
   "mode": "parallel",
   "workers": 4,
   "frames": 500,
-  "wall_seconds": 12.345,
-  "throughput_frames_per_s": 40.50
+  "wall_seconds": 12.345678,
+  "throughput_frames_per_s": 40.5012
 }
 ```
 
 ### Markdown Raporu
 
 ```powershell
---report rapor.md                              # Tek koşu raporu
---compare-json seq.json par.json --report K.md  # Karşılaştırma raporu
+# Tek koşu raporu
+--report rapor.md
+
+# İki JSON karşılaştırma raporu
+--compare-json seq.json par.json --report KIYAS.md
 ```
 
 ### Video Kaydı
 
 ```powershell
+# İşlenmiş kareleri MP4'e kaydet
 --record cikti.mp4 --record-fps 30
 ```
 
@@ -211,62 +244,66 @@ python -m rt_edge_live --source 0 --mode split-screen \
 
 ---
 
-## 🔑 CLI Bayrakları
+## 📁 Proje Yapısı
+
+```
+paralel/
+├── parallel_video.py          # Giriş shim (python parallel_video.py ...)
+├── requirements.txt           # Bağımlılıklar (opencv-python, numpy)
+├── README.md
+│
+└── rt_edge_live/              # Ana paket
+    ├── __init__.py            # Paket tanımı & dışa aktarım
+    ├── __main__.py            # python -m rt_edge_live desteği
+    ├── cli.py                 # CLI argparse, mod yönlendirme, metrik akışı
+    ├── runners.py             # 3 çalıştırıcı: sequential, parallel, split-screen
+    ├── pipeline.py            # EdgeInspectionPipeline — 4 profil iş hattı
+    ├── mp_workers.py          # multiprocessing okuyucu + işçi süreç hedefleri
+    ├── display.py             # Paralel modda sıralı kare tüketimi + HUD
+    ├── profiles.py            # Profil tanımları (fast/standard/quality/stress)
+    ├── report.py              # Markdown rapor üretimi (tek koşu + karşılaştırma)
+    ├── recorder.py            # VideoRecorder — MP4/AVI yazıcı (codec fallback)
+    ├── metrics.py             # JSON benchmark payload oluşturma
+    ├── hud.py                 # Üst bant overlay + rolling FPS tahmini
+    ├── logging_setup.py       # Ana + alt süreç log yapılandırması
+    ├── constants.py           # Ürün sabitleri
+    ├── video_source.py        # Kaynak çözümlemesi (kamera indeksi / dosya yolu)
+    └── version.py             # Sürüm bilgisi (1.2.1)
+```
+
+---
+
+## 🔑 Temel CLI Bayrakları
 
 | Bayrak | Varsayılan | Açıklama |
 |--------|-----------|----------|
 | `--source` | `0` | Kamera indeksi veya video dosya yolu |
 | `--mode` | `parallel` | `sequential` · `parallel` · `split-screen` |
-| `--workers` | `CPU-1` | Paralel modda işçi süreç sayısı |
+| `--workers` | CPU-1 | Paralel modda işçi süreç sayısı |
 | `--profile` | `standard` | `fast` · `standard` · `quality` · `stress` |
-| `--max-frames` | `∞` | N kare sonra dur |
-| `--no-window` | — | Görüntü penceresi gösterme |
-| `--metrics-out` | — | Metrik JSON dosyasına yaz |
-| `--metrics-split-out` | — | Sıralı + paralel çift ölçüm |
+| `--max-frames` | ∞ | N kare sonra dur |
+| `--no-window` | `false` | Görüntü penceresi gösterme (benchmark için) |
+| `--metrics-out` | — | Metrik JSON dosyasına yaz (UTF-8) |
+| `--metrics-split-out` | — | Sıralı + paralel çift ölçüm tek JSON |
 | `--record` | — | İşlenmiş videoyu MP4 olarak kaydet |
 | `--report` | — | Markdown ölçüm raporu üret |
 | `--compare-json` | — | İki JSON ölçümünü karşılaştır |
+| `--benchmark` | `false` | İnsan okunur ölçüm özeti (stdout) |
 | `--log-level` | `INFO` | `DEBUG` · `INFO` · `WARNING` · `ERROR` |
-
----
-
-## 📁 Proje Yapısı
-
-```
-parallel-programming/
-├── 📄 parallel_video.py        # Giriş shim
-├── 📄 requirements.txt         # opencv-python, numpy
-├── 📄 README.md
-│
-└── 📦 rt_edge_live/            # Ana paket
-    ├── __init__.py              # Paket tanımı
-    ├── __main__.py              # python -m desteği
-    ├── cli.py                   # CLI argparse & mod yönlendirme
-    ├── runners.py               # sequential / parallel / split-screen
-    ├── pipeline.py              # EdgeInspectionPipeline (4 profil)
-    ├── mp_workers.py            # multiprocessing okuyucu + işçi
-    ├── display.py               # Paralel mod kare tüketimi + HUD
-    ├── profiles.py              # Profil tanımları
-    ├── report.py                # Markdown rapor üretimi
-    ├── recorder.py              # VideoRecorder (MP4/AVI)
-    ├── metrics.py               # JSON benchmark payload
-    ├── hud.py                   # HUD overlay + rolling FPS
-    ├── logging_setup.py         # Log yapılandırması
-    ├── constants.py             # Ürün sabitleri
-    ├── video_source.py          # Kaynak çözümlemesi
-    └── version.py               # v1.2.1
-```
 
 ---
 
 ## 📝 Notlar
 
-- Kaynak kodu **UTF-8** olarak tutun
-- Metrik dosyası için PowerShell'de `>` yerine `--metrics-out` kullanın (UTF-16 riski)
-- Sürüm bilgisi: `rt_edge_live/version.py`
+- Kaynak kodu **UTF-8** olarak tutun.
+- Metrik dosyası için PowerShell'de `>` yerine `--metrics-out` veya `--metrics-split-out` kullanın (UTF-16 riski).
+- Ürün adı kodda ASCII olarak `Canli Kenar Analitigi` geçer; sürüm `rt_edge_live/version.py` içindeki `__version__` alanındadır.
 
 ---
 
-<p align="center">
-  Developed by <strong>Büşra Yavuz</strong>
-</p>
+<div align="center">
+
+**Büşra Yavuz** tarafından geliştirilmiştir.
+
+</div>
+]]>
