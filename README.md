@@ -245,6 +245,6 @@ Tam liste: `python -m rt_edge_live --help`
 
 <p align="center">
 
-**Büşra Yavuz**, **Şerife Enginer** ve **Melike Kutlu** tarafından geliştirilmiştir.
+**Büşra Yavuz**, **Şerife Enginar** ve **Melike Kutlu** tarafından geliştirilmiştir.
 
 </p>
